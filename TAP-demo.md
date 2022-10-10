@@ -1,8 +1,36 @@
 # TAP DevSecOps
 
-> http://tap-gui.tap.mytanzuprod.com/
+## GCP instance
 
-## review the Tekton pipeline
+http://tap-gui.tap.mytanzuprod.com/
+
+## Supply chain
+
+### ootb_supply_chain_testing_scanning 
+
+* Watching a Git Repository or local directory for changes.
+* Running tests from a developer-provided Tekton Pipeline.
+* Scanning the source code for known vulnerabilities using Grype.
+* Building a container image out of the source code with Buildpacks.
+* Scanning the image for known vulnerabilities.
+* Applying operator-defined conventions to the container definition.
+* Deploying the application to the same cluster.
+
+Not Done
+
+* Gitops Approval path
+
+
+## Continous Integration
+
+![](https://i.imgur.com/LCJ2xOf.png)
+
+## Continous Deployment 
+
+![](https://i.imgur.com/cxURe1v.png)
+
+
+## Review the Tekton pipeline
 
 ```yaml=
 #tekton pipeline to test a dotnet application
@@ -113,7 +141,7 @@ curl http://localhost:5006/weatherforecast | jq .
 ## Create a workload and deploy it
 
 ```shell=
-tanzu apps workload create tanzu-dotnet-gitops-app \                                                                       ✔
+tanzu apps workload create Weather-API \
   --git-branch main \
   --git-repo https://github.com/PradeepLoganathan/Weatherforecast-api \
   --label apps.tanzu.vmware.com/has-tests=true \
@@ -121,3 +149,56 @@ tanzu apps workload create tanzu-dotnet-gitops-app \                            
   --type web \
   --namespace application-ns
 ```
+
+
+## Tanzu insights
+
+The Tanzu Insight CLI plug-in enables querying vulnerability, image, and package data.
+This can be used to create a CycloneDX based SBOM.
+
+## Query source code information
+
+![](https://i.imgur.com/VqpoI5n.png)
+
+
+This command gives information about the source code, the package information etc based on the git commit sha.
+
+```shell
+tanzu insight source get --commit main/736e45c457d4bca19933d9a96cc61e6ab80d0926
+```
+
+## Query images for package and vulnerability info
+
+This command checks a specific image and displays packages & CVEs it contains.
+
+```shell
+tanzu insight image packages --digest sha256:3226eadb07724c7ecb47fb9cc48e24a4a8de7f3ef7bacde5923cf131ea09994b --format json  | jq '.[0:10]'
+```
+
+We can also get the same information in cyclonedx format as below
+
+```shell
+tanzu insight image get --digest sha256:3226eadb07724c7ecb47fb9cc48e24a4a8de7f3ef7bacde5923cf131ea09994b --format cyclonedx
+```
+
+We can check an image for vulnerabilites and which packages contain these vulnerabilities
+
+```shell
+tanzu insight image vulnerabilities --digest sha256:3226eadb07724c7ecb47fb9cc48e24a4a8de7f3ef7bacde5923cf131ea09994b --format json | jq '.[0:10]'
+```
+
+## Query vulnerability information
+
+We can query for packages with vulnerabilities based on a specific CVE ID.
+
+
+
+### Find packages with CVE ID - CVE-2016-1000027
+
+This was the CVE which we ignored in the scan policy as it was critical
+
+```shell
+tanzu insight vulnerabilities get --cveid CVE-2016-1000027 --format json
+```
+
+
