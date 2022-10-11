@@ -141,13 +141,14 @@ curl http://localhost:5006/weatherforecast | jq .
 ## Create a workload and deploy it
 
 ```shell=
-tanzu apps workload create Weather-API \
+tanzu apps workload create weatherforecastapi \
   --git-branch main \
-  --git-repo https://github.com/PradeepLoganathan/Weatherforecast-api \
+  --git-repo https://github.com/PradeepLoganathan/my-weather-project \
   --label apps.tanzu.vmware.com/has-tests=true \
-  --label app.kubernetes.io/part-of=tanzu-dotnet-gitops-app \
+  --label app.kubernetes.io/part-of=weatherapp \
   --type web \
   --namespace application-ns
+
 ```
 
 
